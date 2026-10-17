@@ -20,6 +20,8 @@ class GenerationResult:
     prompt_tokens: int
     new_tokens: int
 
+class PromptTooLongError(ValueError):
+    """Промпт не оставляет места для ответа в контексте модели."""
 
 class ChatGenerator:
     def __init__(self, model: GPT, tokenizer: Tokenizer, device: str = "cpu"):
@@ -44,7 +46,10 @@ class ChatGenerator:
         prompt_ids = self.tok.encode(self.build_prompt(question)).ids
         idx = torch.tensor([prompt_ids], dtype=torch.long, device=self.device)
         start = idx.shape[1]
-
+        if start > self.block_size:
+            raise PromptTooLongError(
+                f"Вопрос слишком длинный: {start} токенов при контексте модели {self.block_size}"
+            )
         for _ in range(p.max_new_tokens):
             logits, _ = self.model(idx[:, -self.block_size:])
             logits = logits[:, -1, :]
