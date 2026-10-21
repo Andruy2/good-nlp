@@ -1,0 +1,18 @@
+services:
+  api:
+    build: .
+    image: good-nlp-api
+    ports:
+      - "8000:8000"
+    environment:
+      APP_CKPT_PATH: /models/ckpt_sft.pt
+      APP_TOKENIZER_PATH: /models/tokenizer.json
+    volumes:
+      - ./models:/models:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
