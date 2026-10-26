@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     device: str = "cpu"
     torch_threads: int | None = None
     log_level: str = "INFO"
+    database_url: str
 
 
 settings = Settings()
