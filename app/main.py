@@ -1,10 +1,10 @@
 import logging
 import time
 from contextlib import asynccontextmanager
-
+from app.api import chat, conversations, health
 import torch
 from fastapi import FastAPI
-
+from app.db.session import engine
 from app.api import chat, health
 from app.config import settings
 from app.ml.generation import ChatGenerator
@@ -34,9 +34,11 @@ async def lifespan(app: FastAPI):
     yield
 
     app.state.generator = None
+    engine.dispose()
     logger.info("Shutdown complete")
 
 
 app = FastAPI(title="GOOD-NLP chat", lifespan=lifespan)
 app.include_router(health.router)
 app.include_router(chat.router)
+app.include_router(conversations.router)
